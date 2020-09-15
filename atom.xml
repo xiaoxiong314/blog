@@ -2,7 +2,7 @@
 <feed xmlns="http://www.w3.org/2005/Atom">
     <id>https://xiaoxiong314.github.io</id>
     <title>Gridea</title>
-    <updated>2020-09-14T14:53:26.050Z</updated>
+    <updated>2020-09-15T14:05:39.004Z</updated>
     <generator>https://github.com/jpmonette/feed</generator>
     <link rel="alternate" href="https://xiaoxiong314.github.io"/>
     <link rel="self" href="https://xiaoxiong314.github.io/atom.xml"/>
@@ -10,6 +10,69 @@
     <logo>https://xiaoxiong314.github.io/images/avatar.png</logo>
     <icon>https://xiaoxiong314.github.io/favicon.ico</icon>
     <rights>All rights reserved 2020, Gridea</rights>
+    <entry>
+        <title type="html"><![CDATA[Civil3D API定义多视图快（Multiview Block）]]></title>
+        <id>https://xiaoxiong314.github.io/post/civil3d-api-ding-yi-duo-shi-tu-kuai-multiview-block/</id>
+        <link href="https://xiaoxiong314.github.io/post/civil3d-api-ding-yi-duo-shi-tu-kuai-multiview-block/">
+        </link>
+        <updated>2020-09-15T11:20:59.000Z</updated>
+        <content type="html"><![CDATA[<p>Multiview Block是Autocad Architecture中的概念。</p>
+<pre><code class="language-C#">[CommandMethod(&quot;DEFINEMVBLOCK&quot;)]
+public void DefineMVBlock()
+{
+	Document acDoc = Autodesk.AutoCAD.ApplicationServices.Core.Application.DocumentManager.MdiActiveDocument;
+
+	using (Transaction trans = acDoc.Database.TransactionManager.StartTransaction())
+	{
+        BlockTable acBlkTbl;
+        acBlkTbl = trans.GetObject(acDoc.Database.BlockTableId, OpenMode.ForRead) as BlockTable;
+        
+        ObjectId blk1 = acBlkTbl[&quot;tree_2d&quot;];
+        ObjectId blk_3d = acBlkTbl[&quot;tree_3d&quot;];
+        Aecdb.DisplayRepresentation displayRep_2d = new Aecdb.DisplayRepresentation();
+        Aecdb.DisplayRepresentation displayRep_3d = new Aecdb.DisplayRepresentation();
+        
+        ObjectIdCollection oids = Aecdb.DisplayRepresentationManager.GetActiveDisplayRepresentationSets(acDoc.Database);                
+        foreach (ObjectId id in oids)
+        {
+            Aecdb.DisplaySet ds = trans.GetObject(id,OpenMode.ForRead) as Aecdb.DisplaySet;
+            foreach(ObjectId drid in ds.DisplayRepresentationIds )
+            {
+                Aecdb.DisplayRepresentation disp = trans.GetObject(drid,OpenMode.ForRead) as Aecdb.DisplayRepresentation;
+                if (disp.Name == &quot;AecDbDispRepMvBlockRef&quot;) displayRep_2d = disp;
+                if (disp.Name == &quot;AecDbDispRepMvBlockRefModel&quot;) displayRep_3d = disp;
+            }
+        }
+        
+        Aecdb.MultiViewBlockViewDefinition mvblockViewDef_2d = new Aecdb.MultiViewBlockViewDefinition();
+        mvblockViewDef_2d.SetViewOn(Aecdb.ViewDirection.Top, true); 
+        mvblockViewDef_2d.BlockId = blk1;
+        Aecdb.MultiViewBlockDisplayRepresentationDefinition mvblockRepDef_2d = new Aecdb.MultiViewBlockDisplayRepresentationDefinition();
+        mvblockRepDef_2d.ViewDefinitions.Add(mvblockViewDef_2d);
+        mvblockRepDef_2d.DisplayRepresentationId = displayRep_2d.Id;
+        
+        Aecdb.MultiViewBlockViewDefinition mvblockViewDef_3d = new Aecdb.MultiViewBlockViewDefinition();
+        mvblockViewDef_3d.SetAllViews(true);
+        mvblockViewDef_3d.BlockId = blk_3d;
+        Aecdb.MultiViewBlockDisplayRepresentationDefinition mvblockRepDef_3d = new Aecdb.MultiViewBlockDisplayRepresentationDefinition();
+        mvblockRepDef_3d.ViewDefinitions.Add(mvblockViewDef_3d);
+        mvblockRepDef_3d.DisplayRepresentationId = displayRep_3d.Id;
+                
+        Aecdb.MultiViewBlockDefinition mvblockDef = new Aecdb.MultiViewBlockDefinition();
+        mvblockDef.DisplayRepresentationDefinitions.Add(mvblockRepDef_2d);
+        mvblockDef.DisplayRepresentationDefinitions.Add(mvblockRepDef_3d);
+
+        mvblockDef.Description = &quot;This is a MVBlock defined by Net API.&quot;;
+
+        Aecdb.DictionaryMultiViewBlockDefinition mvblockDic = new Aecdb.DictionaryMultiViewBlockDefinition(acDoc.Database);
+        
+        mvblockDic.AddNewRecord(&quot;MyMVBlock&quot;,mvblockDef);
+        trans.Commit();
+    }
+ }
+</code></pre>
+]]></content>
+    </entry>
     <entry>
         <title type="html"><![CDATA[Hello Gridea]]></title>
         <id>https://xiaoxiong314.github.io/post/hello-gridea/</id>
